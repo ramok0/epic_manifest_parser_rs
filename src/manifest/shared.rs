@@ -1,4 +1,4 @@
-use std::{collections::hash_map::DefaultHasher, hash::{Hash, Hasher}};
+use std::{collections::hash_map::DefaultHasher, fmt::Formatter, hash::{Hash, Hasher}};
 
 use sha1::{Sha1, Digest};
 
@@ -8,31 +8,31 @@ pub const SHA1_DIGEST_SIZE:usize = 20;
 pub const MD5_DIGEST_SIZE:usize = 16;
 pub const SHA256_DIGEST_SIZE:usize = 32;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, serde::Serialize)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Default, serde::Serialize)]
 
 /// This type is the same type used in the Unreal Engine 4 source code to represent a GUID.
 /// Learn more here https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FGuid
 
 pub struct FGuid {
     ///Private:
-    a:u32,
+    pub a:u32,
     ///	Holds the second component.
-    b:u32,
+    pub b:u32,
     ///	Holds the third component.
-    c:u32,
+    pub c:u32,
     ///    Holds the fourth component.
-    d:u32
+    pub d:u32
 }
 
-impl FGuid {
-    /// Creates a new FGuid from the given components.
-    pub fn from_byte_reader(reader: &mut ByteReader) -> ParseResult<FGuid> {
-        Ok(FGuid {
-            a: reader.read()?,
-            b: reader.read()?,
-            c: reader.read()?,
-            d: reader.read()?
-        })
+impl std::fmt::Debug for FGuid {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:8X}{:8X}{:8X}{:8X}", self.a, self.b, self.c, self.d)
+    }
+}
+
+impl ToString for FGuid {
+    fn to_string(&self) -> String {
+        format!("{:8X}{:8X}{:8X}{:8X}", self.a, self.b, self.c, self.d)
     }
 }
 
@@ -55,7 +55,116 @@ impl From<u8> for EManifestStorageFlags {
             _ => panic!("Invalid EManifestStorageFlags value")
         }
     }
+}
 
+#[derive(Debug, PartialEq, Copy, Clone, serde::Serialize)]
+pub enum EChunkStorageFlags
+{
+    None ,
+    // Flag for compressed data.
+    Compressed,
+    // Flag for encrypted. If also compressed, decrypt first. Encryption will ruin compressibility.
+    Encrypted,
+}
+
+impl Default for EChunkStorageFlags {
+    fn default() -> Self {
+        EChunkStorageFlags::None
+    }
+}
+
+impl From<u8> for EChunkStorageFlags {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => EChunkStorageFlags::None,
+            1 => EChunkStorageFlags::Compressed,
+            2 => EChunkStorageFlags::Encrypted,
+            _ => panic!("Invalid EChunkStorageFlags value")
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Copy, Clone, serde::Serialize)]
+pub enum EChunkHashFlags
+{
+    None,
+
+    // Flag for FRollingHash class used, stored in RollingHash on header.
+    RollingPoly64,
+
+    // Flag for FSHA1 class used, stored in SHAHash on header.
+    Sha1,
+
+    Both
+}
+
+impl From<u8> for EChunkHashFlags {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => EChunkHashFlags::None,
+            1 => EChunkHashFlags::RollingPoly64,
+            2 => EChunkHashFlags::Sha1,
+            3 => EChunkHashFlags::Both,
+            _ => panic!("Invalid EChunkHashFlags value")
+        }
+    }
+}
+
+impl Default for EChunkHashFlags {
+    fn default() -> Self {
+        EChunkHashFlags::None
+    }
+}
+
+
+#[derive(Debug, Clone, Copy, serde::Serialize)]
+pub enum EChunkVersion
+{
+    Invalid,
+    Original,
+    StoresShaAndHashType,
+    StoresDataSizeUncompressed,
+
+    // Always after the latest version, signifies the latest version plus 1 to allow initialization simplicity.
+    LatestPlusOne,
+    Latest
+}
+
+impl Default for EChunkVersion {
+    fn default() -> Self {
+        EChunkVersion::Invalid
+    }
+}
+
+impl EChunkVersion {
+    pub fn to_i32(&self) -> i32 {
+        match self {
+            EChunkVersion::Invalid => 0,
+            EChunkVersion::Original => 1,
+            EChunkVersion::StoresShaAndHashType => 2,
+            EChunkVersion::StoresDataSizeUncompressed => 3,
+            EChunkVersion::LatestPlusOne => 4,
+            EChunkVersion::Latest => EChunkVersion::LatestPlusOne.to_i32() -1,
+        }
+    }
+
+    pub fn from_i32(value: i32) -> EChunkVersion {
+        match value {
+            0 => EChunkVersion::Invalid,
+            1 => EChunkVersion::Original,
+            2 => EChunkVersion::StoresShaAndHashType,
+            3 => EChunkVersion::StoresDataSizeUncompressed,
+            4 => EChunkVersion::LatestPlusOne,
+            5 => EChunkVersion::Latest,
+            _ => EChunkVersion::Invalid
+        }
+    }
+}
+
+impl PartialEq for EChunkVersion {
+    fn eq(&self, other: &Self) -> bool {
+        self.to_i32() == other.to_i32()
+    }
 }
 
 /**
@@ -241,12 +350,18 @@ impl<const DIGEST_LENGTH: usize> ToString for UnknownHash<DIGEST_LENGTH> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 
 /// This type is the same type used in the Unreal Engine 4 source code to represent a SHA1 hash
 /// Learn more here https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FSHAHash/
 pub struct FSHAHash {
-    data: [u8; SHA1_DIGEST_SIZE]
+    pub(crate) data: [u8; SHA1_DIGEST_SIZE]
+}
+
+impl std::fmt::Debug for FSHAHash {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_string())
+    }
 }
 
 impl serde::Serialize for FSHAHash {
@@ -294,13 +409,6 @@ impl FSHAHash {
         FSHAHash {
             data: hasher.finalize().into()
         }
-    }
-
-    pub fn from_byte_reader(reader: &mut ByteReader) -> ParseResult<FSHAHash> {
-
-        Ok(FSHAHash {
-            data: reader.read_bytes(SHA1_DIGEST_SIZE)?.try_into().map_err(|_| crate::error::ParseError::InvalidData)?
-        })
     }
 
     pub fn data(&self) -> [u8; SHA1_DIGEST_SIZE] {

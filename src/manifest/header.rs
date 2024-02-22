@@ -30,7 +30,7 @@ impl FManifestHeader {
         let header_size = manifest.reader.read()?;
         let data_size_uncompressed = manifest.reader.read()?;
         let data_size_compressed = manifest.reader.read()?;
-        let header_hash = FSHAHash::from_byte_reader(&mut manifest.reader)?;
+        let header_hash = manifest.reader.read()?;
 
         let stored_as = EManifestStorageFlags::try_from(manifest.reader.read::<u8>()?).map_err(|_| ParseError::InvalidStorageFlag)?;
         let version = EFeatureLevel::from_i32(manifest.reader.read()?).ok_or(ParseError::InvalidData)?;

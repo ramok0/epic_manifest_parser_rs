@@ -5,7 +5,7 @@ use std::ffi::CString;
 
 use widestring::U16String;
 
-use crate::{ error::ParseError, ParseResult };
+use crate::{ error::ParseError, manifest::shared::{FGuid, FSHAHash, SHA1_DIGEST_SIZE}, ParseResult };
 
 #[derive(Debug)]
 pub struct ByteReader {
@@ -84,6 +84,12 @@ impl ByteReader {
             }
             Ok(result)
         }
+    }
+
+    pub fn read_remaining(&mut self) -> Vec<u8> {
+        let result = self.data[self.position..].to_vec();
+        self.position = self.data.len();
+        result
     }
 }
 
@@ -218,5 +224,24 @@ impl ByteReadable for String {
         };
 
         Ok(string)
+    }
+}
+
+impl ByteReadable for FGuid {
+    fn read(reader: &mut ByteReader) -> ParseResult<Self> {
+        let a = reader.read()?;
+        let b = reader.read()?;
+        let c = reader.read()?;
+        let d = reader.read()?;
+
+        Ok(FGuid { a, b, c, d })
+    }
+}
+
+impl ByteReadable for FSHAHash {
+    fn read(reader: &mut ByteReader) -> ParseResult<Self> {
+        Ok(FSHAHash {
+            data: reader.read_bytes(SHA1_DIGEST_SIZE)?.try_into().map_err(|_| crate::error::ParseError::InvalidData)?
+        })
     }
 }

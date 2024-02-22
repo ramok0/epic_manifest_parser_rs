@@ -18,7 +18,7 @@ impl FChunkPart {
         let start = reader.tell();
 
         let struct_size = reader.read::<u32>()?;
-        let guid = FGuid::from_byte_reader(reader)?;
+        let guid = reader.read()?;
         let offset = reader.read()?;
         let size = reader.read()?;
 

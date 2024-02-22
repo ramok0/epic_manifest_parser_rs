@@ -30,7 +30,7 @@ impl FFileManifestList {
         }
 
         for entry in entries.iter_mut() {
-            entry.hash = FSHAHash::from_byte_reader(reader)?;
+            entry.hash = reader.read()?;
         }
 
         for entry in entries.iter_mut() {
