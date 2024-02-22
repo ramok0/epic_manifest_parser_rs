@@ -1,4 +1,4 @@
-use crate::{error::ParseError, manifest::shared::{FGuid, FSHAHash}, reader::ByteReader, ParseResult};
+use crate::{error::ParseError, manifest::shared::FGuid, reader::ByteReader, ParseResult};
 
 use super::{chunk_info::FChunkInfo, shared::EFeatureLevel};
 

@@ -1,5 +1,5 @@
 use crate::{error::ParseError, reader::ByteReader, ParseResult};
-use super::{chunk_part::FChunkPart, file_manifest::FFileManifest, shared::{UnknownHash, FSHAHash}};
+use super::{chunk_part::FChunkPart, file_manifest::FFileManifest, shared::UnknownHash};
 
 
 #[derive(Debug, Clone, serde::Serialize)]

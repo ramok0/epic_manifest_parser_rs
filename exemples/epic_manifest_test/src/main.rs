@@ -1,7 +1,4 @@
-use std::{fs::File, io::{Read, Seek, Write}};
-use flate2::read::ZlibDecoder;
-
-use epic_manifest_parser_rs::{error::ParseError, manifest::{chunks::chunk_header::FChunkHeader, shared::EFeatureLevel, FManifestParser}, reader::ByteReader};
+use epic_manifest_parser_rs::manifest::FManifestParser;
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>>{

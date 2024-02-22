@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use crate::{manifest::{header, shared::{EChunkHashFlags, EChunkStorageFlags, EChunkVersion, FGuid, FSHAHash}}, reader::ByteReader, ParseResult};
+use crate::{manifest::shared::{EChunkHashFlags, EChunkStorageFlags, EChunkVersion, FGuid, FSHAHash}, reader::ByteReader, ParseResult};
 
 pub const CHUNK_MAGIC: u32 = 0xB1FE3AA2;
 
