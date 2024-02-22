@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::{error::ParseError, reader::ByteReader, ParseResult};
 
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct FCustomFields {
     _size:u32,
     _version:u8,
@@ -11,6 +11,7 @@ pub struct FCustomFields {
 }
 
 impl FCustomFields {
+    /// This function is used to parse Custom Fields from a ByteReader
     pub fn parse(reader:&mut ByteReader) -> ParseResult<FCustomFields> {
         let start = reader.tell();
 

@@ -3,7 +3,7 @@ use crate::{error::ParseError, manifest::shared::{FGuid, FSHAHash}, reader::Byte
 use super::{chunk_info::FChunkInfo, shared::EFeatureLevel};
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct FChunkInfos {
     _manifest_version:EFeatureLevel,
     _size: u32,
@@ -12,6 +12,7 @@ pub struct FChunkInfos {
 }
 
 impl FChunkInfos {
+    /// This function is used to parse FChunkInfos from a ByteReader
     pub fn parse(data: &mut ByteReader, manifest_version:EFeatureLevel) -> ParseResult<FChunkInfos> {
         let reader_start = data.tell();
 

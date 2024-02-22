@@ -8,5 +8,6 @@ license = "MIT"
 
 [dependencies]
 flate2 = "1.0.28"
+serde = { version = "1.0.197", features = ["derive"] }
 sha1 = "0.10.6"
 widestring = "1.0.2"

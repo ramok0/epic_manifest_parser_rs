@@ -1,9 +1,8 @@
 use crate::{error::ParseError, reader::ByteReader, ParseResult};
+use super::{chunk_part::FChunkPart, file_manifest::FFileManifest, shared::{UnknownHash, FSHAHash}};
 
-use super::{chunk_part::FChunkPart, file_manifest::FFileManifest, shared::{FSHAHash, MD5_DIGEST_SIZE, SHA256_DIGEST_SIZE}};
 
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct FFileManifestList {
     pub(crate) _version: u8,
     pub(crate) _size:u32,
@@ -12,6 +11,7 @@ pub struct FFileManifestList {
 }
 
 impl FFileManifestList {
+    /// This function is used to parse a FFileManifestList from a ByteReader
     pub fn parse(reader: &mut ByteReader) -> ParseResult<FFileManifestList> {
         let reader_start = reader.tell();
 
@@ -58,7 +58,7 @@ impl FFileManifestList {
             for entry in entries.iter_mut() {
                 let has_md5 = reader.read::<u32>()?;
                 if has_md5 != 0 {
-                    entry.hash_md5 = reader.read_bytes(MD5_DIGEST_SIZE)?.try_into().ok();
+                    entry.hash_md5 = UnknownHash::from_byte_reader(reader).ok();
                 }
             }
 
@@ -69,7 +69,7 @@ impl FFileManifestList {
 
          if version >= 2 {
             for entry in entries.iter_mut() {
-                entry.hash_sha256 = reader.read_bytes(SHA256_DIGEST_SIZE)?.try_into().ok();
+                entry.hash_sha256 = UnknownHash::from_byte_reader(reader).ok();
             }
          }
 

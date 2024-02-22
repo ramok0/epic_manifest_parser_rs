@@ -3,7 +3,7 @@ use crate::{error::ParseError, reader::ByteReader, ParseResult};
 use super::shared::FGuid;
 
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct FChunkPart {
     size:u32,
     guid: FGuid,
@@ -12,6 +12,7 @@ pub struct FChunkPart {
 }
 
 impl FChunkPart {
+    /// This function is used to parse FChunkPart from a ByteReader
     pub fn parse(reader:&mut ByteReader, file_offset:usize) -> ParseResult<FChunkPart>
     {
         let start = reader.tell();

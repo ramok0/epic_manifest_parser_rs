@@ -8,19 +8,24 @@ pub const SHA1_DIGEST_SIZE:usize = 20;
 pub const MD5_DIGEST_SIZE:usize = 16;
 pub const SHA256_DIGEST_SIZE:usize = 32;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, serde::Serialize)]
+
+/// This type is the same type used in the Unreal Engine 4 source code to represent a GUID.
+/// Learn more here https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FGuid
+
 pub struct FGuid {
-    //Private:
+    ///Private:
     a:u32,
-    //	Holds the second component.
+    ///	Holds the second component.
     b:u32,
-    //	Holds the third component.
+    ///	Holds the third component.
     c:u32,
-    //    Holds the fourth component.
+    ///    Holds the fourth component.
     d:u32
 }
 
 impl FGuid {
+    /// Creates a new FGuid from the given components.
     pub fn from_byte_reader(reader: &mut ByteReader) -> ParseResult<FGuid> {
         Ok(FGuid {
             a: reader.read()?,
@@ -31,7 +36,7 @@ impl FGuid {
     }
 }
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone, serde::Serialize)]
 pub enum EManifestStorageFlags {
     // Stored as raw data.
     None = 0,
@@ -56,7 +61,7 @@ impl From<u8> for EManifestStorageFlags {
 /**
  * An enum type to describe supported features of a certain manifest.
  */
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, serde::Serialize)]
 pub enum EFeatureLevel {
     // The original version.
     Original,
@@ -192,8 +197,65 @@ impl EFeatureLevel {
 }
 
 #[derive(Debug, Clone)]
+
+/// This type is used to represent a hash. The length of the hash is known at compile time.
+/// It is used to represent both MD5 and SHA256 hashes.
+pub struct UnknownHash<const DIGEST_LENGTH: usize> {
+    pub data: [u8; DIGEST_LENGTH]
+}
+
+impl<const DIGEST_LENGTH:usize> serde::Serialize for UnknownHash<DIGEST_LENGTH> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl<const DIGEST_LENGTH:usize> UnknownHash<DIGEST_LENGTH> {
+    pub fn new(data: [u8; DIGEST_LENGTH]) -> UnknownHash<DIGEST_LENGTH> {
+        UnknownHash {
+            data
+        }
+    }
+
+    pub fn from_byte_reader(reader: &mut ByteReader) -> ParseResult<UnknownHash<DIGEST_LENGTH>> {
+        Ok(UnknownHash {
+            data: reader.read_bytes(DIGEST_LENGTH)?.try_into().map_err(|_| crate::error::ParseError::InvalidData)?
+        })
+    }
+
+    pub fn data(&self) -> [u8; DIGEST_LENGTH] {
+        self.data
+    }
+}
+
+impl<const DIGEST_LENGTH: usize> ToString for UnknownHash<DIGEST_LENGTH> {
+    fn to_string(&self) -> String {
+        let mut result = String::with_capacity(DIGEST_LENGTH*2);
+        for byte in self.data.iter() {
+            result.push_str(&format!("{:02x}", byte));
+        }
+        result
+    }
+}
+
+#[derive(Debug, Clone)]
+
+/// This type is the same type used in the Unreal Engine 4 source code to represent a SHA1 hash
+/// Learn more here https://docs.unrealengine.com/4.27/en-US/API/Runtime/Core/Misc/FSHAHash/
 pub struct FSHAHash {
     data: [u8; SHA1_DIGEST_SIZE]
+}
+
+impl serde::Serialize for FSHAHash {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
 }
 
 impl Default for FSHAHash {
@@ -215,6 +277,14 @@ impl FSHAHash {
         FSHAHash {
             data
         }
+    }
+
+    fn to_string(&self) -> String {
+        let mut result = String::with_capacity(SHA1_DIGEST_SIZE*2);
+        for byte in self.data.iter() {
+            result.push_str(&format!("{:02x}", byte));
+        }
+        result
     }
 
     pub fn new_from_hashable(data:impl Hash + std::convert::AsRef<[u8]>) -> FSHAHash {

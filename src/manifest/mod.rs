@@ -14,7 +14,7 @@ pub struct FManifestParser {
     pub reader: ByteReader
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct FManifest {
     pub header: header::FManifestHeader,
     pub meta: meta::FManifestMeta,

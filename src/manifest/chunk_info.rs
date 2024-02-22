@@ -1,7 +1,7 @@
 use super::shared::{FGuid, FSHAHash};
 
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, serde::Serialize)]
 pub struct FChunkInfo {
     pub(crate) guid: FGuid,
     pub(crate) hash: u64,

@@ -3,27 +3,24 @@ use crate::{error::ParseError, reader::ByteReader, ParseResult};
 use super::shared::EFeatureLevel;
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct FManifestMeta {
-    pub feature_level:EFeatureLevel,
-    pub b_is_file_data:bool,
-    pub app_id:u32,
-    pub app_name:String,
-    pub build_version:String,
-    pub launch_exe:String,
-    pub launch_command:String,
-    pub prerequisites:Vec<String>,
-    pub prereq_name:String,
-    pub prereq_path:String,
-    pub prereq_args:String,
-    pub build_id:Option<String>,
-    pub prereq_ids:Vec<String>,
-    pub uninstall_action_path:Option<String>,
-    pub uninstall_action_args:Option<String>,
-
+    feature_level:EFeatureLevel,
+    b_is_file_data:bool,
+    app_id:u32,
+    app_name:String,
+    build_version:String,
+    launch_exe:String,
+    launch_command:String,
+    prerequisites:Vec<String>,
+    prereq_name:String,
+    prereq_path:String,
+    prereq_args:String,
+    build_id:Option<String>,
+    prereq_ids:Vec<String>,
+    uninstall_action_path:Option<String>,
+    uninstall_action_args:Option<String>,
 }
-
-//TODO : MAKE THE PARSER FOR METADATA
 
 impl FManifestMeta {
     pub fn parse(reader:&mut ByteReader) -> ParseResult<FManifestMeta> {
@@ -80,5 +77,65 @@ impl FManifestMeta {
          }
 
         Ok(metadata)
+    }
+
+    pub fn app_id(&self) -> u32 {
+        self.app_id
+    }
+
+    pub fn app_name(&self) -> &str {
+        &self.app_name
+    }
+
+    pub fn build_version(&self) -> &str {
+        &self.build_version
+    }
+
+    pub fn launch_exe(&self) -> &str {
+        &self.launch_exe
+    }
+
+    pub fn launch_command(&self) -> &str {
+        &self.launch_command
+    }
+
+    pub fn prerequisites(&self) -> &Vec<String> {
+        &self.prerequisites
+    }
+
+    pub fn prereq_name(&self) -> &str {
+        &self.prereq_name
+    }
+
+    pub fn prereq_path(&self) -> &str {
+        &self.prereq_path
+    }
+
+    pub fn prereq_args(&self) -> &str {
+        &self.prereq_args
+    }
+
+    pub fn build_id(&self) -> Option<&String> {
+        self.build_id.as_ref()
+    }
+
+    pub fn prereq_ids(&self) -> &Vec<String> {
+        &self.prereq_ids
+    }
+
+    pub fn uninstall_action_path(&self) -> Option<&String> {
+        self.uninstall_action_path.as_ref()
+    }
+
+    pub fn uninstall_action_args(&self) -> Option<&String> {
+        self.uninstall_action_args.as_ref()
+    }
+
+    pub fn feature_level(&self) -> EFeatureLevel {
+        self.feature_level
+    }
+
+    pub fn is_file_data(&self) -> bool {
+        self.b_is_file_data
     }
 }

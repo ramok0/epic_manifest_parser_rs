@@ -7,7 +7,7 @@ use flate2::read::ZlibDecoder;
 
 pub const MANIFEST_MAGIC:u32 = 0x44BEC00C;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct FManifestHeader {
     magic: u32,
     header_size: u32,

@@ -1,8 +1,8 @@
-use super::{chunk_part::FChunkPart, shared::{FSHAHash, MD5_DIGEST_SIZE, SHA256_DIGEST_SIZE}};
+use super::{chunk_part::FChunkPart, shared::{UnknownHash, FSHAHash, MD5_DIGEST_SIZE, SHA256_DIGEST_SIZE}};
 
 
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct FFileManifest {
     pub(crate) filename: String,
     pub(crate) syslink_target: String,
@@ -11,8 +11,8 @@ pub struct FFileManifest {
     pub(crate) install_tags: Vec<String>,
     pub(crate) chunk_parts: Vec<FChunkPart>,
     pub(crate) mime_type: Option<String>,
-    pub(crate) hash_md5: Option<[u8; MD5_DIGEST_SIZE]>,
-    pub(crate) hash_sha256: Option<[u8; SHA256_DIGEST_SIZE]>,
+    pub(crate) hash_md5: Option<UnknownHash<MD5_DIGEST_SIZE>>,
+    pub(crate) hash_sha256: Option<UnknownHash<SHA256_DIGEST_SIZE>>,
     pub(crate) file_size: u32
 }
 
@@ -33,11 +33,11 @@ impl FFileManifest {
         &self.hash
     }
 
-    pub fn md5_hash(&self) -> Option<&[u8; MD5_DIGEST_SIZE]> {
+    pub fn md5_hash(&self) -> Option<&UnknownHash<MD5_DIGEST_SIZE>> {
         self.hash_md5.as_ref()
     }
 
-    pub fn sha256_hash(&self) -> Option<&[u8; SHA256_DIGEST_SIZE]> {
+    pub fn sha256_hash(&self) -> Option<&UnknownHash<SHA256_DIGEST_SIZE>> {
         self.hash_sha256.as_ref()
     }
 
