@@ -1,0 +1,10 @@
+workspace = { members = ["exemples/epic_manifest_test"] }
+[package]
+name = "epic_manifest_parser_rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+flate2 = "1.0.28"
+sha1 = "0.10.6"
+widestring = "1.0.2"
