@@ -3,6 +3,8 @@ workspace = { members = ["exemples/epic_manifest_test"] }
 name = "epic_manifest_parser_rs"
 version = "0.1.5"
 edition = "2021"
+description = "A lightweight, fast epic manifest parser made in Rust."
+license = "MIT"
 
 [dependencies]
 flate2 = "1.0.28"
