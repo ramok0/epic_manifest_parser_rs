@@ -16,6 +16,12 @@ pub struct FFileManifest {
     pub(crate) file_size: u32
 }
 
+impl PartialEq for FFileManifest {
+    fn eq(&self, other: &Self) -> bool {
+        self.hash == other.hash && self.filename == other.filename
+    }
+}
+
 impl FFileManifest {
     pub fn read_only(&self) -> bool {
         self.flags & 0x01 == 1
@@ -61,7 +67,7 @@ impl FFileManifest {
         &self.chunk_parts
     }
 
-    pub fn install_tags(&self) -> &[String] {
+    pub fn install_tags(&self) -> &Vec<String> {
         &self.install_tags
     }
 

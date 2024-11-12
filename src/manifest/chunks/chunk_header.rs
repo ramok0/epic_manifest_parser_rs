@@ -21,9 +21,7 @@ pub struct FChunkHeader {
 impl FChunkHeader {
     pub fn parse(reader: &mut ByteReader) -> ParseResult<FChunkHeader> {
         let start = reader.tell();
-        dbg!(start);
         let magic = reader.read::<u32>()?;
-        dbg!(magic);
         if magic != CHUNK_MAGIC {
             return Err(crate::error::ParseError::InvalidMagic)
         }

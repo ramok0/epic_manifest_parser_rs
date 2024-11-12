@@ -12,6 +12,7 @@ pub mod custom_fields;
 pub mod chunks;
 
 pub struct FManifestParser {
+    pub data: Vec<u8>,
     pub reader: ByteReader
 }
 
@@ -21,18 +22,20 @@ pub struct FManifest {
     pub meta: meta::FManifestMeta,
     pub chunk_list: chunk_list::FChunkList,
     pub file_list: file_manifest_list::FFileManifestList,
-    pub custom_fields: custom_fields::FCustomFields
+    pub custom_fields: custom_fields::FCustomFields,
+    pub data: Vec<u8>
 }
 
 impl FManifestParser {
     pub fn new(data: &[u8]) -> FManifestParser {
         FManifestParser {
+            data: data.to_vec(),
             reader: ByteReader::new(data.to_vec())
         }
     }
 
-    pub fn parse(&mut self) -> ParseResult<FManifest> {
-        let (header, mut reader) = header::FManifestHeader::parse(self)?;
+    pub fn parse(mut self) -> ParseResult<FManifest> {
+        let (header, mut reader) = header::FManifestHeader::parse(&mut self)?;
 
         let meta = meta::FManifestMeta::parse(&mut reader)?;
         let chunk_header = chunk_list::FChunkList::parse(&mut reader, header.version())?;
@@ -44,7 +47,8 @@ impl FManifestParser {
             meta,
             chunk_list: chunk_header,
             file_list,
-            custom_fields
+            custom_fields,
+            data: self.data
         })
     }
 }

@@ -2,7 +2,7 @@ use std::{collections::hash_map::DefaultHasher, fmt::Formatter, hash::{Hash, Has
 
 use sha1::{Sha1, Digest};
 
-use crate::{reader::ByteReader, ParseResult};
+use crate::{helper, reader::ByteReader, ParseResult};
 
 pub const SHA1_DIGEST_SIZE:usize = 20;
 pub const MD5_DIGEST_SIZE:usize = 16;
@@ -26,13 +26,23 @@ pub struct FGuid {
 
 impl std::fmt::Debug for FGuid {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:8X}{:8X}{:8X}{:8X}", self.a, self.b, self.c, self.d)
+        write!(f, "{}", self.to_string())
     }
 }
 
 impl ToString for FGuid {
     fn to_string(&self) -> String {
-        format!("{:8X}{:8X}{:8X}{:8X}", self.a, self.b, self.c, self.d)
+
+        let mut normalize = |str:String| -> String {
+            let len = str.len();
+            if len == 8 {
+                str
+            } else {
+                "0".repeat(8 - len) + &str
+            }
+        };
+
+        normalize(helper::to_hex(self.a)) + &normalize(helper::to_hex(self.b)) + &normalize(helper::to_hex(self.c)) + &normalize(helper::to_hex(self.d))
     }
 }
 
